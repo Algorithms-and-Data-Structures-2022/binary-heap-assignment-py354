@@ -36,7 +36,7 @@ namespace assignment {
 
   bool MinBinaryHeap::Insert(int key, int value) {
 
-    if (size_ == capacity_) {
+    if (size_ >= capacity_) {
       // двоичная куча заполнена, операция вставки нового узла невозможна
       return false;
     }
@@ -45,8 +45,10 @@ namespace assignment {
     // 1. Вставьте новый узел в "конец" массива.
     // 2. Увеличьте размер двоичной кучи.
     // 3. Вызовите операцию sift_up над индексом вставленного элемента.
-
-    return false;
+    data_[size_] = Node(key, value);
+    size_ += 1;
+    sift_up(size_-1);
+    return true;
   }
 
   std::optional<int> MinBinaryHeap::Extract() {
@@ -61,8 +63,13 @@ namespace assignment {
     // 2. В корень поместите последний элемент (правый нижний в куче).
     // 3. Уменьшите размер двоичной кучи.
     // 4. Вызовите функцию "спуска" узлов heapify над индексом корня.
-
-    return std::nullopt;
+    int value = data_[0].value;
+    Node last = data_[size_-1];
+    data_[0].key = last.key;
+    data_[0].value = last.value;
+    size_ -= 1;
+    heapify(0);
+    return value;
   }
 
   bool MinBinaryHeap::Remove(int key) {
@@ -74,16 +81,26 @@ namespace assignment {
     // 2. Установите ключом удаляемого узла наименьшее возможное значение ключа min_key_value.
     // 3. Вызовите над индексом удаляемого элемента функцию sift_up.
     // 4. Извлеките корневой (удаляемый) узел из кучи операцией Extract.
+    auto index = search_index(key);
+    if (!index.has_value()) {
+      return false;
+    }
 
+    data_[index.value()].key = min_key_value;
+    sift_up(index.value());
+    Extract();
     return true;
   }
 
   void MinBinaryHeap::Clear() {
-    // Write your code here ...
+    size_ = 0;
   }
 
   std::optional<int> MinBinaryHeap::Search(int key) const {
-    // Write your code here ...
+    auto index = search_index(key);
+    if (index.has_value()) {
+      return data_[index.value()].value;
+    }
     return std::nullopt;
   }
 
@@ -153,7 +170,11 @@ namespace assignment {
   }
 
   std::optional<int> MinBinaryHeap::search_index(int key) const {
-    // Write your code here ...
+    for (int i = 0; i < size_; i++) {
+      if (data_[i].key == key) {
+        return i;
+      }
+    }
     return std::nullopt;
   }
 
